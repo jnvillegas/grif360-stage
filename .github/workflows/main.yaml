@@ -1,0 +1,40 @@
+name: Build and Deploy to Prod
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    name: Build and Deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build
+        run: |
+          REACT_APP_GOOGLE_DRIVE_CLIENT_ID=${{secrets.REACT_APP_GOOGLE_DRIVE_CLIENT_ID}} REACT_APP_GOOGLE_DRIVE_API_KEY=${{secrets.REACT_APP_GOOGLE_DRIVE_API_KEY}} CI=false npm run build
+          
+
+      - name: Create heartbeat file
+        run: |
+          echo "DATE=$(date)" > build/heartbeat.txt
+          echo "GH_SHA=$(git rev-parse HEAD)" >> build/heartbeat.txt
+
+      - name: Copy file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_DEPLOY_HOST }}
+          port: ${{ secrets.DEPLOY_HOST_PORT }}
+          username: ${{ secrets.SSH_DEPLOY_USER_NAME }}
+          password: ${{ secrets.DEPLOY_USER_PASSWORD }}
+          source: build/*
+          target: ${{ secrets.SSH_DEPLOY_PATH }}

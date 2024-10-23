@@ -1,0 +1,13 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "80:3000"  # Use port 80 for the frontend, as backend uses 3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Allow to re-build on changes
+      - REACT_APP_BASE_URL=https://metaverso.griftin.com.ar/app/v1 # uses localhost backend / change if needed

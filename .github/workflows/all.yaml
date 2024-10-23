@@ -1,0 +1,24 @@
+# This will be disabled for resource saving purposes
+name: Build for testing purposes
+on:
+  push:
+
+jobs:
+  build_only:
+    name: Build Only
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build
+        run: |
+          CI=false npm run build
+
